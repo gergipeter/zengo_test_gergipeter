@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\CityController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\CountyController;
@@ -18,4 +19,7 @@ use App\Http\Controllers\Api\CountyController;
 
 Route::get('/counties', [CountyController::class, 'index']);
 Route::get('/counties/{county}/cities', [CountyController::class, 'getCities']);
+
+Route::resource('cities', CityController::class);
+
 

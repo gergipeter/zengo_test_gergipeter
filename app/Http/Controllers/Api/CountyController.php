@@ -10,7 +10,7 @@ class CountyController extends Controller
 {
     public function index()
     {
-        return County::all();
+        return County::orderBy('name')->get();
     }
 
     public function getCities(County $county)
