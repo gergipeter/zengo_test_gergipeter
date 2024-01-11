@@ -1,6 +1,6 @@
 Zengo Test Feladat
 
-![screenshot](/screenshot1.png?raw=true)
+![screenshot](https://github.com/gergipeter/zengo_test_gergipeter/blob/main/screenshot1.PNG)
 
   
 <h2>🛠️ Installation Steps:</h2>
