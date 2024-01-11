@@ -1,6 +1,7 @@
 Zengo Test Feladat
 
-![screenshot](screenshot1.png)
+![screenshot](/screenshot1.png?raw=true)
+
   
 <h2>🛠️ Installation Steps:</h2>
 
