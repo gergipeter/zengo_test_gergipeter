@@ -9,7 +9,7 @@ class CityType extends Model
 {
     use HasFactory;
     
-    protected $fillable = ['type', 'priority'];
+    protected $fillable = ['name', 'priority'];
 
     public $timestamps = false;
 

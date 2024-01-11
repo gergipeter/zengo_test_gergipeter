@@ -21,6 +21,7 @@
         </ul>
       </div>
       <div v-else class="loading">Városok betöltése...</div>
+      <div v-if="!cities.length" class="loading">Nem található város</div>
 </template>
 
 <script>

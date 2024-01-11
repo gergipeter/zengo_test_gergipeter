@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\CityType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -19,13 +20,13 @@ class CityTypeFactory extends Factory
     public function definition(): array
     {
         $types = [
-            ['type' => 'megyei jogú város', 'priority' => 4],
-            ['type' => 'nagyközség', 'priority' => 6],
-            ['type' => 'főváros', 'priority' => 1],
-            ['type' => 'fővárosi kerület', 'priority' => 2],
-            ['type' => 'község', 'priority' => 7],
-            ['type' => 'megyeszékhely', 'priority' => 3],
-            ['type' => 'város', 'priority' => 5],
+            ['name' => 'megyei jogú város', 'priority' => 4],
+            ['name' => 'nagyközség', 'priority' => 6],
+            ['name' => 'főváros', 'priority' => 1],
+            ['name' => 'fővárosi kerület', 'priority' => 2],
+            ['name' => 'község', 'priority' => 7],
+            ['name' => 'megyeszékhely', 'priority' => 3],
+            ['name' => 'város', 'priority' => 5],
         ];
 
         return $this->faker->randomElement($types);

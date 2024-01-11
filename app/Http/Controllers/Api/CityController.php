@@ -42,7 +42,7 @@ class CityController extends Controller
         $city = City::findOrFail($id);
         $city->update(['name' => $updatedName]);
 
-        return response()->json(['id' => $city->id, 'name' => $city->name], 201);
+        return response()->json(['id' => $city->id, 'name' => $city->name], 200);
     }
 
     /**
@@ -53,6 +53,6 @@ class CityController extends Controller
         $city = City::findOrFail($id);
         $city->delete();
 
-        return response()->json(['success' => true]);
+        return response()->json(['success' => true], 200);
     }
 }

@@ -39,7 +39,7 @@
             <a class="page-link mr-3" href="#" @click="showAll">Összes</a>
           </li>
         </ul>
-        <p class="text-center">Összesen {{ pagination.total }} található</p>
+        <p class="text-center">Összesen {{ pagination.total }} elem található</p>
       </nav>
   
       <!-- Show Back Button -->
