@@ -41,7 +41,6 @@ class CityController extends Controller
 
         $city = City::findOrFail($id);
         $city->update(['name' => $updatedName]);
-     //   $city->save();
 
         return response()->json(['id' => $city->id, 'name' => $city->name], 201);
     }

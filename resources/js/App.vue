@@ -1,63 +1,40 @@
 <template>
   <div class="container mt-4">
     <div class="form-group">
-
       <div class="row">
+        
+        <CountySelector
+          :counties="counties"
+          :selectedCounty="selectedCounty"
+          :selectedCountyPlaceholder="selectedCountyPlaceholder"
+          :getCities="getCities"
+          :newCity="newCity"
+          :addNewCity="addNewCity"
+          @update:selectedCounty="updateSelectedCounty"
+          @update:newCity="updateNewCity"
+        />
 
-        <div class="col-md-6 mb-3">
-          <label for="county">Megye:</label>
-            <transition name="fade" mode="out-in">
-              <select
-                v-if="counties.length"
-                class="form-control"
-                v-model="selectedCounty"
-                @change="getCities"
-                :placeholder="selectedCountyPlaceholder"
-                id="county"
-              >
-                <option value="" disabled selected>{{ selectedCountyPlaceholder }}</option>
-                <option v-for="county in counties" :key="county.id" :value="county.id">{{ county.name }}</option>
-              </select>
-              <div v-else class="loading">Megyék betöltése...</div>
-            </transition>
+        <div v-if="selectedCounty" class="col-md-6 mt-3 mb-3">
+          <CityList
+            :cities="cities"
+            :selectedCity="selectedCity"
+            :editedCityName.sync="editedCityName"
+            :handleCityClick="handleCityClick"
+            :deleteCity="deleteCity"
+            :saveEditedCity="saveEditedCity"
+            :cancelEditCity="cancelEditCity"
+            @update:editedCityName="updateCityName"
+            />
 
-          <div v-if="selectedCounty" class="mt-3">
-            <label for="newCity">Új Város</label>
-            <div class="input-group">
-              <input v-model="newCity" type="text" id="newCity" class="form-control">
-              <div class="input-group-append">
-                <button @click="addNewCity" class="customBtnClass btn btn-primary">Felvesz</button>
-              </div>
-            </div>
-          </div>
-          
-        </div>
+          <Pagination
+            :pagination="pagination"
+            :showAllMode="showAllMode"
+            :changePage="changePage"
+            :displayPageNumbersWithEllipsis="displayPageNumbersWithEllipsis"
+            :showAll="showAll"
+            :goBackToPagination="goBackToPagination"
+          />
 
-        <div v-if="selectedCounty" class="form-group col-md-6 mb-3">
-        <label for="city">Városok:</label>
-          <transition name="fade" mode="out-in">
-            <div v-if="cities.length">
-              <ul class="list-group">
-                <li v-for="city in cities" :key="city.id" class="list-group-item d-flex align-items-center" @click="handleCityClick(city)">
-                  <div v-if="selectedCity && city.id !== selectedCity.id">
-                    {{ city.name }}
-                  </div>
-                  <div v-else>
-                    <input v-model="editedCityName" class="form-control" v-if="editMode && selectedCity && city.id === selectedCity.id" />
-                    <span v-else>
-                      {{ city.name }}
-                    </span>
-                  </div>
-                <span v-if="selectedCity && city.id === selectedCity.id" class="ms-auto">
-                  <button @click="deleteCity()" class="customBtnClass btn btn-danger">Töröl</button>
-                  <button @click="saveEditedCity(city.id)" class="customBtnClass btn btn-success">Módosít</button>
-                  <button @click="cancelEditCity" class="customBtnClass btn btn-secondary">Mégse</button>
-                </span>
-              </li>
-              </ul>
-            </div>
-            <div v-else class="loading">Városok betöltése...</div>
-          </transition>
         </div>
       </div>
     </div>
@@ -66,7 +43,12 @@
 </template>
 
 <script>
+
 import { toast } from 'vue3-toastify';
+
+import CountySelector from './components/CountySelector.vue';
+import CityList from './components/CityList.vue';
+import Pagination from './components/Pagination.vue';
 
 export default {
   data() {
@@ -79,64 +61,173 @@ export default {
       selectedCityPlaceholder: 'Válasszon',
       newCity: '',
       editedCityName: '',
-      editMode: false,
-
+      pagination: null,
+      maxDisplayedPages: 5,
+      showAllMode: false,
     };
   },
   mounted() {
     this.getCounties();
   },
+  components: {
+    Pagination,
+    CityList,
+    CountySelector,
+  },
+  computed: {
+  displayPageNumbersWithEllipsis: function() {
+    const result = [];
+    const totalPageCount = this.pagination ? this.pagination.last_page : 0;
+    const currentPage = this.pagination ? this.pagination.current_page : 0;
+    const visiblePageCount = 5;
+
+    if (totalPageCount <= visiblePageCount) {
+      for (let i = 1; i <= totalPageCount; i++) {
+        result.push(i);
+      }
+    } else {
+      const halfVisibleCount = Math.floor(visiblePageCount / 2);
+      const startPage = currentPage - halfVisibleCount;
+      const endPage = currentPage + halfVisibleCount;
+
+      if (startPage <= 0) {
+        for (let i = 1; i <= visiblePageCount; i++) {
+          result.push(i);
+        }
+        result.push('...');
+      } else if (endPage > totalPageCount) {
+        result.push('...');
+        for (let i = totalPageCount - visiblePageCount + 1; i <= totalPageCount; i++) {
+          result.push(i);
+        }
+      } else {
+        result.push('...');
+        for (let i = startPage; i <= endPage; i++) {
+          result.push(i);
+        }
+        result.push('...');
+      }
+    }
+
+    return result;
+  }
+},
   methods: {
-
-    resetCities() {
-      this.selectedCity = null;
+    showAll() {
+      this.getCities(`/api/counties/${encodeURIComponent(this.selectedCounty)}/cities?show_all=true`);
+      this.showAllMode = true;
     },
-
+    goBackToPagination() {
+      this.showAllMode = false;
+      // Fetch paginated data when going back to pagination
+      this.getCities();
+    },
+    loadPreviousPage() {
+      if (this.pagination.prev_page_url) {
+        this.getCities(this.pagination.prev_page_url);
+      }
+    },
+    loadNextPage() {
+      if (this.pagination.next_page_url) {
+        this.getCities(this.pagination.next_page_url);
+      }
+    },
+    changePage(page) {
+      if (page >= 1 && page <= this.pagination.last_page) {
+        this.getCities(`/api/counties/${encodeURIComponent(this.selectedCounty)}/cities?page=${page}`);
+      }
+    },
     getCounties() {
       axios.get('/api/counties')
         .then(response => {
           this.counties = response.data;
         })
         .catch(error => {
-          console.error('Error fetching counties:', error);
+          //console.error('Error fetching counties:', error);
+          this.showToast('Általános hiba adódott hozzáadás közben!', 'error');
         });
     },
+    getCities(url) {
+      let apiUrl = '';
+      if (typeof url === 'string') {
+        apiUrl = url;
+      } else {
+        apiUrl = `/api/counties/${this.selectedCounty}/cities`;
+      }
 
-    getCities() {
-      axios.get(`/api/counties/${this.selectedCounty}/cities`)
+      axios.get(apiUrl)
         .then(response => {
-          this.cities = response.data;
+          let cities = null;
+
+          if (this.showAllMode) {
+            // Handle "Show All" mode
+            cities = response.data;
+            this.pagination = null;
+          } else {
+            // Handle paginated mode
+            cities = response.data.data;
+            this.pagination = response.data;
+          }
+
+          // Separate the cities with city_type = 6: capital / megyeszékhely
+          this.cities = cities.sort((a, b) => a.name.localeCompare(b.name))
+            .sort((city) => city.city_type_id === 6 ? -1 : 1);
         })
         .catch(error => {
-          console.error('Error fetching cities:', error);
+          //console.log(error);
+          this.showToast('Általános hiba adódott!', 'error');
         });
-        this.resetCities();
     },
 
     handleCityClick(city) {
       this.selectedCity = { id: city.id, name: city.name };
-      this.editMode = true;
       this.editedCityName = city.name;
     },
-
     showToast(message, type) {
-      toast(message, type, {
+      toast(message, {
         "type": type,
       })
     },
-
+    updateSelectedCounty(value) {
+      this.selectedCounty = value;
+    },
+    updateNewCity(value) {
+      this.newCity = value;
+    },
+    updateCityName(value) {
+      this.editedCityName = value;
+    },
+    cancelEditCity() {
+        this.editedCityName = '';
+        this.selectedCity = null;
+    },
     addNewCity() {
       const newCityData = {
         name: this.newCity,
         countyId: this.selectedCounty,
-        cityTypeId: 7, //7: város 
+        cityTypeId: 7, // 7: város 
       };
       axios.post('/api/cities', newCityData)
         .then(response => {          
-          console.log(response.data );
           if (response.data && response.data.id && response.data.name) {
             const newCityOption = { id: response.data.id, name: response.data.name };
-            this.cities.push(newCityOption);
+  
+            // Find the index to insert the new city alphabetically
+            const insertIndex = this.cities.findIndex(city => city.name.localeCompare(newCityOption.name) > 0);
+
+            // Insert the new city at the correct position
+            if (insertIndex !== -1 && insertIndex !== 0) {
+              this.cities.splice(insertIndex, 0, newCityOption);
+            } else if (insertIndex == 0) {
+              // if insertIndex is 0, new city should be under the capital
+              this.cities.splice(insertIndex+1, 0, newCityOption);
+            } else {
+              // If insertIndex is -1, it means the new city should be added at the end
+              this.cities.push(newCityOption);
+              // update pagination total count
+              this.getCities();
+            }
+
             this.newCity = '';
             this.showToast('Város: ' + newCityData.name + ' sikeresen hozzáadva!', 'success');
           } else {
@@ -144,39 +235,40 @@ export default {
           }
         })
         .catch(error => {
-          console.error;
+          //console.error;
           this.showToast('Általános hiba adódott hozzáadás közben!', 'error');
         });
     },
-
     saveEditedCity(cityId) {
-
       const newCityData = {
         name: this.editedCityName,
       };
-
       axios.put(`/api/cities/${cityId}`, newCityData)
         .then(response => {
 
           if (response.data && response.data.id && response.data.name) {
-            // Find the index of the edited city in the cities array
-            const editedCityIndex = this.cities.findIndex(city => city.id === cityId);
 
-            // Update the city's name in the cities array
-            if (editedCityIndex !== -1) {
-              this.cities[editedCityIndex] = { id: response.data.id, name: response.data.name };
+            if (this.editedCityName !== response.data.name) {
+              const editedCityIndex = this.cities.findIndex(city => city.id === cityId);
+            
+              if (editedCityIndex !== -1) {
+                this.cities[editedCityIndex] = { id: response.data.id, name: response.data.name };
+              }
+              this.selectedCity = null;
+
+              this.showToast('Város: ' + newCityData.name + ' --> ' + response.data.name + ' sikeresen módosítva!', 'success');
+            } else {
+              this.showToast('Városnév nem lett módosítva!', 'info');
             }
-
-            this.showToast('Város: ' + newCityData.name + ' sikeresen módosítva!', 'success');
           } else {
             this.showToast('Nem megfelelő a válaszformátum. Kérlek próbáld újra!', 'error');
           }
         })
         .catch(error => {
-          console.error('Error updating city:', error);
+          //console.error('Error updating city:', error);
           this.showToast('Hiba történt a város módosítása közben. Kérlek próbáld újra!', 'error');
         });
-},
+    },
 
     deleteCity() {
       if (!this.selectedCity.id) {
@@ -187,6 +279,8 @@ export default {
         .then(response => {
           if (response.data.success) {
             this.cities = this.cities.filter(city => city.id !== this.selectedCity.id);
+            // update pagination total count
+            this.getCities();
             this.showToast('Város: ' + this.selectedCity.name + ' sikeresen törölve!', 'success');
           } else {
             this.showToast('Nem megfelelő formátum. Kérlek próbáld újra!', 'error');
@@ -197,6 +291,7 @@ export default {
           this.showToast('Általános hiba adódott törlés közben!', 'error');
         });
     },
+
   },
 };
 </script>
