@@ -41,3 +41,8 @@ input[type="text"] {
     font-size: var(--bs-pagination-font-size);
     color: var(--bs-pagination-color);
 }
+
+.city-link {
+    color: black;
+    text-decoration: underline;
+}

@@ -24,7 +24,7 @@
             :saveEditedCity="saveEditedCity"
             @update:editedCityName="updateCityName"
             />
-
+     
           <Pagination
             :pagination="pagination"
             :showAllMode="showAllMode"
@@ -35,9 +35,14 @@
           />
 
         </div>
+
       </div>
     </div>
   </div>
+  <DeleteConfirmationModal
+    :confirmDelete="confirmDelete"
+    :cityName="selectedCity ? selectedCity.name : ''"
+  />
 
 </template>
 
@@ -48,6 +53,7 @@ import { toast } from 'vue3-toastify';
 import CountySelector from './components/CountySelector.vue';
 import CityList from './components/CityList.vue';
 import Pagination from './components/Pagination.vue';
+import DeleteConfirmationModal from './components/DeleteConfirmationModal.vue';
 
 export default {
   data() {
@@ -72,7 +78,8 @@ export default {
     Pagination,
     CityList,
     CountySelector,
-  },
+    DeleteConfirmationModal
+},
   computed: {
     displayPageNumbersWithEllipsis: function() {
       const result = [];
@@ -143,7 +150,7 @@ export default {
         })
         .catch(error => {
           //console.error('Error fetching counties:', error);
-          this.showToast('Általános hiba adódott hozzáadás közben!', 'error');
+          this.showToast('Általános hiba adódott!', 'error');
         });
     },
     getCities(url) {
@@ -199,7 +206,7 @@ export default {
         cityTypeId: 7, // 7: város 
       };
       axios.post('/api/cities', newCityData)
-        .then(response => {          
+        .then(response => {
           if (response.data && response.data.id && response.data.name) {
             const newCityOption = { id: response.data.id, name: response.data.name };
   
@@ -223,8 +230,13 @@ export default {
           }
         })
         .catch(error => {
-          //console.error;
-          this.showToast('Általános hiba adódott hozzáadás közben!', 'error');
+          if (error.response && error.response.status === 422) {
+            // Validation errors are present
+            this.showToast('Érvénytelen városnév formátum!', 'error');
+          } else {
+            //console.error;
+            this.showToast('Általános hiba adódott!', 'error');
+          }
         });
     },
     saveEditedCity(cityId) {
@@ -254,8 +266,13 @@ export default {
           }
         })
         .catch(error => {
-          //console.error('Error updating city:', error);
-          this.showToast('Hiba történt a város módosítása közben. Kérlek próbáld újra!', 'error');
+          if (error.response && error.response.status === 422) {
+            // Validation errors are present
+            this.showToast('Érvénytelen városnév formátum!', 'error');
+          } else {
+            //console.error('Error updating city:', error);
+            this.showToast('Általános hiba adódott!', 'error');
+          }
         });
     },
     deleteCity() {
@@ -263,11 +280,18 @@ export default {
         this.showToast('Nem megfelelő a válaszformátum. Kérlek próbáld újra!', 'error');
         return;
       }
+
+      // Show the confirmation modal
+      $('#deleteConfirmationModal').modal('show');
+
+    },
+    confirmDelete() {
+      // User confirmed deletion
       axios.delete(`/api/cities/${this.selectedCity.id}`)
         .then(response => {
           if (response.data.success) {
             this.cities = this.cities.filter(city => city.id !== this.selectedCity.id);
-            // update pagination total count
+            // Update pagination total count
             this.getCities();
             this.showToast('Város: ' + this.selectedCity.name + ' sikeresen törölve!', 'success');
           } else {
@@ -275,9 +299,18 @@ export default {
           }
         })
         .catch(error => {
-          //console.log(error);
+          // console.log(error);
           this.showToast('Általános hiba adódott törlés közben!', 'error');
+        })
+        .finally(() => {
+          // Close the confirmation modal
+          $('#deleteConfirmationModal').modal('hide');
         });
+    },
+    handleConfirmCancel() {
+      // User canceled deletion
+      // Close the confirmation modal
+      this.deleteClientConfirmationModalVisiblity = false;
     },
   },
 };

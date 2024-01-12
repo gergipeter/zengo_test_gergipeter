@@ -1,5 +1,5 @@
 <template>
-    <div class="mt-3">
+    <div class="mt-3 mb-5">
       <nav v-if="pagination && !showAllMode">
         <ul class="pagination justify-content-center">
           <!-- ... Previous Page ... -->

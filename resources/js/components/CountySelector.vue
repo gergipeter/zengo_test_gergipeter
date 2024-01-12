@@ -3,7 +3,7 @@
     <label for="county">Megye:</label>
       <select
         v-if="counties.length"
-        class="form-control"
+        class="form-select"
         :value="selectedCounty"
         @input="updateSelectedCounty"
         @change="getCities"

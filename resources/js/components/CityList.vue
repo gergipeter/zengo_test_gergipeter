@@ -9,7 +9,9 @@
         @click="handleCityClick(city); setupEditing(city, index);"
       >
         <div v-if="!city.selected" @click="startEditing(index)">
-          {{ city.name }}
+          <a class="city-link" href="#">
+            {{ city.name }}
+          </a>
         </div>
     
         <div v-else>
@@ -21,7 +23,9 @@
           />
         
           <span v-else>
-            {{ city.name }}
+            <a class="city-link" href="#">
+              {{ city.name }}
+            </a>
           </span>
         </div>
         <span v-show="city.selected" v-if="city.selected && (selectedCity && city.id === selectedCity.id)" class="ms-auto">
@@ -36,6 +40,9 @@
 </template>
 
 <script>
+
+
+
 export default {
   props: {
     cities: Array,

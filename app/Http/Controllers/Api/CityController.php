@@ -14,7 +14,7 @@ class CityController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:255|regex:/^[\p{L}\s]+$/u',
             'countyId' => 'required|exists:counties,id',
             'cityTypeId' => 'required|exists:city_types,id',
         ]);
@@ -34,7 +34,7 @@ class CityController extends Controller
     public function update(Request $request, string $id)
     {
         $request->validate([
-            'name' => 'string|max:255',
+            'name' => 'required|string|max:255|regex:/^[\p{L}\s]+$/u',
         ]);
 
         $updatedName = $request->input('name');
