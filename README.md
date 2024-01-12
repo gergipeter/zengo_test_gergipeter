@@ -12,7 +12,8 @@ Zengo Test Feladat
     cp .env.example .env
     php artisan key:generate
     php artisan migrate
-    php artisan db:seed --class=CountiesTableSeeder
+    php artisan test
+    php artisan db:seed
 
     php artisan serve
     npm install
