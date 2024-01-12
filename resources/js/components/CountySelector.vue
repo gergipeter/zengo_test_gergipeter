@@ -1,9 +1,9 @@
 <template>
   <div class="col-md-6 mt-3 mb-3">
-    <label for="county">Megye:</label>
+    <span class="labelClass" for="county">Megye:</span>
       <select
         v-if="counties.length"
-        class="form-select"
+        class="form-select mt-2"
         :value="selectedCounty"
         @input="updateSelectedCounty"
         @change="getCities"

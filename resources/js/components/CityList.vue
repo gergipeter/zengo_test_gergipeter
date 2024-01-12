@@ -1,6 +1,6 @@
 <template>
-  <label for="city">Városok:</label>
-  <div v-if="cities.length">
+  <span class="labelClass" for="city">Városok:</span>
+  <div class="mt-2" v-if="cities.length">
     <ul class="list-group">
       <li
         v-for="(city, index) in cities"
@@ -19,6 +19,7 @@
             v-if="city.selected && (selectedCity && city.id === selectedCity.id)"
             :value="editedCityName"
             @input="updateCityName($event.target.value);"
+            :id="city.id"
             class="form-control"
           />
         

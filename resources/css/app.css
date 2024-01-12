@@ -46,3 +46,8 @@ input[type="text"] {
     color: black;
     text-decoration: underline;
 }
+
+.labelClass {
+    font-weight: bold;
+    margin-bottom: 10px;
+}
