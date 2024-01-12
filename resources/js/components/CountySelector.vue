@@ -14,7 +14,6 @@
         <option v-for="county in counties" :key="county.id" :value="county.id">{{ county.name }}</option>
       </select>
       <div v-else class="loading">Megyék betöltése...</div>
-      <div v-if="!counties.length" class="loading">Nem található megye</div>
 
     <div v-if="selectedCounty" class="mt-3">
       <label for="newCity">Új Város</label>

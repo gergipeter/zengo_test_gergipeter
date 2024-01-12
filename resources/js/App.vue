@@ -22,7 +22,6 @@
             :handleCityClick="handleCityClick"
             :deleteCity="deleteCity"
             :saveEditedCity="saveEditedCity"
-            :cancelEditCity="cancelEditCity"
             @update:editedCityName="updateCityName"
             />
 
@@ -75,42 +74,42 @@ export default {
     CountySelector,
   },
   computed: {
-  displayPageNumbersWithEllipsis: function() {
-    const result = [];
-    const totalPageCount = this.pagination ? this.pagination.last_page : 0;
-    const currentPage = this.pagination ? this.pagination.current_page : 0;
-    const visiblePageCount = 5;
+    displayPageNumbersWithEllipsis: function() {
+      const result = [];
+      const totalPageCount = this.pagination ? this.pagination.last_page : 0;
+      const currentPage = this.pagination ? this.pagination.current_page : 0;
+      const visiblePageCount = 5;
 
-    if (totalPageCount <= visiblePageCount) {
-      for (let i = 1; i <= totalPageCount; i++) {
-        result.push(i);
-      }
-    } else {
-      const halfVisibleCount = Math.floor(visiblePageCount / 2);
-      const startPage = currentPage - halfVisibleCount;
-      const endPage = currentPage + halfVisibleCount;
-
-      if (startPage <= 0) {
-        for (let i = 1; i <= visiblePageCount; i++) {
-          result.push(i);
-        }
-        result.push('...');
-      } else if (endPage > totalPageCount) {
-        result.push('...');
-        for (let i = totalPageCount - visiblePageCount + 1; i <= totalPageCount; i++) {
+      if (totalPageCount <= visiblePageCount) {
+        for (let i = 1; i <= totalPageCount; i++) {
           result.push(i);
         }
       } else {
-        result.push('...');
-        for (let i = startPage; i <= endPage; i++) {
-          result.push(i);
-        }
-        result.push('...');
-      }
-    }
+        const halfVisibleCount = Math.floor(visiblePageCount / 2);
+        const startPage = currentPage - halfVisibleCount;
+        const endPage = currentPage + halfVisibleCount;
 
-    return result;
-  }
+        if (startPage <= 0) {
+          for (let i = 1; i <= visiblePageCount; i++) {
+            result.push(i);
+          }
+          result.push('...');
+        } else if (endPage > totalPageCount) {
+          result.push('...');
+          for (let i = totalPageCount - visiblePageCount + 1; i <= totalPageCount; i++) {
+            result.push(i);
+          }
+        } else {
+          result.push('...');
+          for (let i = startPage; i <= endPage; i++) {
+            result.push(i);
+          }
+          result.push('...');
+        }
+      }
+
+      return result;
+    }
 },
   methods: {
     showAll() {
@@ -154,7 +153,6 @@ export default {
       } else {
         apiUrl = `/api/counties/${this.selectedCounty}/cities`;
       }
-
       axios.get(apiUrl)
         .then(response => {
           let cities = null;
@@ -169,16 +167,13 @@ export default {
             this.pagination = response.data;
           }
 
-          // Separate the cities with city_type = 6: capital / megyeszékhely
-          this.cities = cities.sort((a, b) => a.name.localeCompare(b.name))
-            .sort((city) => city.city_type_id === 6 ? -1 : 1);
+          this.cities = cities.sort((a, b) => a.name.localeCompare(b.name));
         })
         .catch(error => {
           //console.log(error);
           this.showToast('Általános hiba adódott!', 'error');
         });
     },
-
     handleCityClick(city) {
       this.selectedCity = { id: city.id, name: city.name };
       this.editedCityName = city.name;
@@ -197,10 +192,6 @@ export default {
     updateCityName(value) {
       this.editedCityName = value;
     },
-    cancelEditCity() {
-        this.editedCityName = '';
-        this.selectedCity = null;
-    },
     addNewCity() {
       const newCityData = {
         name: this.newCity,
@@ -216,11 +207,8 @@ export default {
             const insertIndex = this.cities.findIndex(city => city.name.localeCompare(newCityOption.name) > 0);
 
             // Insert the new city at the correct position
-            if (insertIndex !== -1 && insertIndex !== 0) {
+            if (insertIndex !== -1) {
               this.cities.splice(insertIndex, 0, newCityOption);
-            } else if (insertIndex == 0) {
-              // if insertIndex is 0, new city should be under the capital
-              this.cities.splice(insertIndex+1, 0, newCityOption);
             } else {
               // If insertIndex is -1, it means the new city should be added at the end
               this.cities.push(newCityOption);
@@ -254,9 +242,10 @@ export default {
               if (editedCityIndex !== -1) {
                 this.cities[editedCityIndex] = { id: response.data.id, name: response.data.name };
               }
+
               this.selectedCity = null;
 
-              this.showToast('Város: ' + newCityData.name + ' --> ' + response.data.name + ' sikeresen módosítva!', 'success');
+              this.showToast('Város: ' + this.editedCityName + ' ➡ ' + response.data.name + ' sikeresen módosítva!', 'success');
             } else {
               this.showToast('Városnév nem lett módosítva!', 'info');
             }
@@ -269,7 +258,6 @@ export default {
           this.showToast('Hiba történt a város módosítása közben. Kérlek próbáld újra!', 'error');
         });
     },
-
     deleteCity() {
       if (!this.selectedCity.id) {
         this.showToast('Nem megfelelő a válaszformátum. Kérlek próbáld újra!', 'error');
@@ -291,7 +279,6 @@ export default {
           this.showToast('Általános hiba adódott törlés közben!', 'error');
         });
     },
-
   },
 };
 </script>
