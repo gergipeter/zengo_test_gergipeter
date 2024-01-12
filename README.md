@@ -6,6 +6,7 @@ Zengo Test Feladat
 
 <h2>🛠️ Installation Steps:</h2>
 
+```bash
     git clone https://github.com/gergipeter/zengo_test_gergipeter.git
     cd zengo_test_gergipeter
     composer update
@@ -18,6 +19,8 @@ Zengo Test Feladat
     php artisan serve
     npm install
     npm run dev
+```
+    
     
 
 <h2>💻 Built with</h2>
